@@ -23,9 +23,15 @@ func cmdInit() {
     if [ -d "$target_dir" ]; then
       cd "$target_dir" || return 1
     fi
-    echo "$output" | grep -v "^__WUT_CD__:"
+    local filtered
+    filtered=$(echo "$output" | grep -v "^__WUT_CD__:")
+    if [ -n "$filtered" ]; then
+      printf "%s\\n" "$filtered"
+    fi
   else
-    echo "$output"
+    if [ -n "$output" ]; then
+      printf "%s\\n" "$output"
+    fi
   fi
   return $exit_code
 }
