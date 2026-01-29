@@ -34,6 +34,7 @@ func printUsage() {
 	if !context.IsWrapperActive() {
 		fmt.Println()
 		fmt.Println("⚠️  Add shell integration to ~/.zshrc or ~/.bashrc:")
+		fmt.Println()
 		fmt.Println("     eval \"$(wut init)\"")
 	}
 }
