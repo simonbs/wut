@@ -80,8 +80,6 @@ wut rm <branch> [--force]     # Remove a worktree
 
 Autocompletion is available for supported shells once you run `eval "$(wut init)"`, so you can tab-complete commands, branch names, and worktree names.
 
-Example tab completion:
-
 ```sh
 $ wut go feat<TAB>
 # Completes to a matching worktree name
