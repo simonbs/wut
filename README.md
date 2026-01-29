@@ -30,7 +30,7 @@ Git’s native worktree commands feel tedious and geared toward long-lived workt
 
 **wut?** keeps worktrees in the `.worktrees` folder (auto-ignored by Git) inside the repo and exposes commands like `wut new`, `wut go`, `wut list`, and `wut rm` to manage them.
 
-It still builds directly on Git’s worktrees, so it plays nicely with any other Git CLI or UI. Very opinionated. Very syntactic sugar. Very much designed for the agentic era, unlike the built-in commands that are super tedious.
+It still builds directly on Git’s worktrees, so it plays nicely with any other Git CLI or UI. Very opinionated and very much designed for the ✨agentic era✨, unlike the built-in commands that are super tedious.
 
 ## 🚀 Getting Started
 
