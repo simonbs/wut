@@ -1,8 +1,8 @@
 class Wut < Formula
   desc "Git worktree manager that keeps worktrees out of your repo"
   homepage "https://github.com/simonbs/wut"
-  url "https://github.com/simonbs/wut/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "7f01da8bfa34bb390cf5c2ed8d962df3f958cf78b3b8bef91fbb23926185e469"
+  url "https://github.com/simonbs/wut/archive/refs/tags/v0.1.1.tar.gz"
+  sha256 "8da82e867407bbac6cc68ec543915bfd3850b602e1b2dad4d2835f131834be97"
   head "https://github.com/simonbs/wut.git", branch: "main"
 
   depends_on "go" => :build
