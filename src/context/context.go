@@ -141,12 +141,12 @@ func IsWrapperActive() bool {
 
 func RequireWrapper(commandName string) {
 	if !IsWrapperActive() {
-		fmt.Fprintf(os.Stderr, "The '%s' command requires shell integration to change directories.\n", commandName)
-		fmt.Fprintln(os.Stderr, "Add this to your ~/.zshrc or ~/.bashrc:")
+		fmt.Fprintf(os.Stderr, "⚠️  The '%s' command requires shell integration to change directories.\n", commandName)
+		fmt.Fprintln(os.Stderr, "   Add this to your ~/.zshrc or ~/.bashrc:")
 		fmt.Fprintln(os.Stderr, "")
-		fmt.Fprintln(os.Stderr, "  eval \"$(wut init)\"")
+		fmt.Fprintln(os.Stderr, "     eval \"$(wut init)\"")
 		fmt.Fprintln(os.Stderr, "")
-		fmt.Fprintln(os.Stderr, "Then reload your shell with: source ~/.zshrc")
+		fmt.Fprintln(os.Stderr, "   Then reload your shell with: source ~/.zshrc")
 		os.Exit(1)
 	}
 }
