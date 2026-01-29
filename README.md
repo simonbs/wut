@@ -51,7 +51,24 @@ eval "$(wut init)"
 This enables automatic directory changing when you run `wut new` or `wut go`. Without it, these commands will prompt you to set up shell integration.
 
 ## 🧭 Usage
-Run `wut` from inside the repo you want worktrees for. `wun` will automatically create a `.worktrees/` folder in the root of the repository. `.worktrees/` folders will automatically be added to your global `.gitignore` file.
+Run `wut` from inside the repo you want worktrees for.
+
+```sh
+$ wut new feature-login
+# Creates worktree and switches to it
+
+$ wut list
+👉 feature-login  ~/projects/myapp/.worktrees/feature-login
+🏠 main           ~/projects/myapp
+
+$ wut go
+# Switches to main worktree
+
+$ wut rm feature-login
+# Removes worktree and deletes branch
+```
+
+`wun` will automatically create a `.worktrees/` folder in the root of the repository. `.worktrees/` folders will automatically be added to your global `.gitignore` file.
 
 ```sh
 wut new <branch> [--from ref] # Create a new worktree
@@ -68,19 +85,4 @@ Example tab completion:
 ```sh
 $ wut go feat<TAB>
 # Completes to a matching worktree name
-```
-
-```sh
-$ wut new feature-login
-# Creates worktree and switches to it
-
-$ wut list
-👉 feature-login  ~/projects/myapp/.worktrees/feature-login
-🏠 main           ~/projects/myapp
-
-$ wut go
-# Switches to main worktree
-
-$ wut rm feature-login
-# Removes worktree and deletes branch
 ```
