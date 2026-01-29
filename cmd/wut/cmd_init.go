@@ -25,11 +25,11 @@ func cmdInit() {
     fi
     local filtered
     filtered=$(echo "$output" | grep -v "^__WUT_CD__:")
-    if [ -n "$filtered" ]; then
+    if printf "%s" "$filtered" | grep -q '[^[:space:]]'; then
       printf "%s\\n" "$filtered"
     fi
   else
-    if [ -n "$output" ]; then
+    if printf "%s" "$output" | grep -q '[^[:space:]]'; then
       printf "%s\\n" "$output"
     fi
   fi
