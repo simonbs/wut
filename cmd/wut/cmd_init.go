@@ -24,12 +24,12 @@ func cmdInit() {
       cd "$target_dir" || return 1
     fi
     local filtered
-    filtered=$(echo "$output" | grep -v "^__WUT_CD__:")
-    if printf "%s" "$filtered" | grep -q '[^[:space:]]'; then
+    filtered=$(printf "%s" "$output" | grep -v "^__WUT_CD__:")
+    if [[ -n "${filtered//[[:space:]]/}" ]]; then
       printf "%s\\n" "$filtered"
     fi
   else
-    if printf "%s" "$output" | grep -q '[^[:space:]]'; then
+    if [[ -n "${output//[[:space:]]/}" ]]; then
       printf "%s\\n" "$output"
     fi
   fi
