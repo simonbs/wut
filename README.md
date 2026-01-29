@@ -19,14 +19,14 @@
 </div>
 
 <div align="center">
-  <a href="#-why">✨ Why</a>&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="#-why">✨ Why?</a>&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="#-getting-started">🚀 Getting Started</a>&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="#-usage">🧭 Usage</a>
 </div>
 
 <hr />
 
-## ✨ Why
+## ✨ Why?
 Git’s native worktree commands feel tedious and geared toward long-lived worktrees, but I just spin them up for short-lived sessions. **wut?* streamlines that.
 
 **wut?** keeps worktrees in the `.worktrees` folder (auto-ignored by Git) inside the repo and exposes commands like `wut new`, `wut go`, `wut list`, and `wut rm` to manage them.
