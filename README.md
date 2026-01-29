@@ -36,7 +36,7 @@ It also keeps the workflow simple. You shouldn't have to remember where you put 
 Install wut using Homebrew as shown below.
 
 ```sh
-brew tap simonbs/wut
+brew tap simonbs/wut https://github.com/simonbs/wut.git
 brew install wut
 ```
 
