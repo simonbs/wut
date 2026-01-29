@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/simonbs/wut/internal/git"
+	"github.com/simonbs/wut/src/git"
 )
 
 type Entry struct {
