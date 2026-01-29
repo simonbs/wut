@@ -20,8 +20,7 @@
 <div align="center">
   <a href="#-why">✨ Why</a>&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="#-getting-started">🚀 Getting Started</a>&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="#-usage">🧭 Usage</a>&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="#-configuration">⚙️ Configuration</a>&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="#-usage">🧭 Usage</a>
 </div>
 
 <hr />
