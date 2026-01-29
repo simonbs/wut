@@ -88,4 +88,3 @@ export WUT_HOME="$HOME/.wut-custom"
 Cleanup is explicit. wut **never** deletes active worktrees on its own. The `wut gc` command only removes orphaned directories that Git no longer knows about, and you can always preview what it would remove with `--dry-run`.
 
 If you want some lightweight housekeeping, wut can run that same cleanup after normal commands on a schedule. This is **on by default** and runs at most once every six hours.
-```
