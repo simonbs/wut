@@ -11,7 +11,7 @@
 </div>
 
 <div align="center">
-  <h3><strong>wut</strong> — Worktrees Unexpectedly Tolerable</h3>
+  <h3><strong>wut?</strong> — Worktrees Unexpectedly Tolerable</h3>
   <p>Ephemeral worktrees that stay out of your vibe zone.</p>
 </div>
 
@@ -26,13 +26,15 @@
 <hr />
 
 ## ✨ Why
-If you love Git worktrees but hate the mess they leave behind, **wut** is for you. Worktrees are amazing for parallel tasks, but the default workflow tends to scatter folders in places you actually care about. wut moves all of that noise into a single hidden home, so your repo stays clean and your brain stays calmer.
+Git’s native worktree commands feel tedious and geared toward long-lived worktrees, but I just spin them up for short-lived dives—`wut` streamlines that.
 
-It also keeps the workflow simple. You shouldn't have to remember where you put a temporary worktree last week or manually prune folders that Git no longer tracks. wut's job is to make worktrees feel lightweight again: create a branch, jump into it, move on.
+**wut?** keeps worktrees in the `.worktrees` folder (auto-ignored by Git) inside the repo and exposes commands like `wut new`, `wut go`, `wut list`, and `wut rm` to manage them.
+
+It still builds directly on Git’s worktrees, so it plays nicely with any other Git CLI or UI. Very opinionated. Very syntactic sugar. Very much designed for the agentic era, unlike the built-in commands that are super tedious.
 
 ## 🚀 Getting Started
 
-Install wut using Homebrew as shown below.
+Install **wut?** using Homebrew as shown below.
 
 ```sh
 brew tap simonbs/wut https://github.com/simonbs/wut.git
@@ -48,7 +50,7 @@ eval "$(wut init)"
 This enables automatic directory changing when you run `wut new` or `wut go`. Without it, these commands will prompt you to set up shell integration.
 
 ## 🧭 Usage
-Run wut from inside the repo you want worktrees for. wut uses your current repo to decide where to create and manage worktrees, and it won't run from outside to avoid surprises.
+Run `wut` from inside the repo you want worktrees for. `wut` uses your current repo to decide where to create and manage worktrees, and it won't run from outside to avoid surprises.
 
 Autocompletion is available for supported shells once you run `eval "$(wut init)"`, so you can tab-complete commands, branch names, and worktree names.
 
