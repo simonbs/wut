@@ -1,4 +1,12 @@
 <div align="center">
+  <img width="700" src="/screenshot.png" />
+  <h3><strong>wut?</strong> — Worktrees Unexpectedly Tolerable</h3>
+  <p>Ephemeral worktrees without the ceremony.</p>
+</div>
+
+<hr />
+
+<div align="center">
   <pre>
                                 ▄▄▄▄▄   
                        ██      █▀▀▀▀██  
@@ -9,14 +17,6 @@
   ▀▀  ▀▀    ▀▀▀▀ ▀▀     ▀▀▀▀     ▀▀     
   </pre>
 </div>
-
-<div align="center">
-  <h3><strong>wut?</strong> — Worktrees Unexpectedly Tolerable</h3>
-  <p>Ephemeral worktrees without the ceremony.</p>
-  <img width="700" src="/screenshot.png" />
-</div>
-
-<hr />
 
 <div align="center">
   <a href="#-why">✨ Why</a>&nbsp;&nbsp;&nbsp;&nbsp;
