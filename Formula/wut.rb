@@ -12,8 +12,11 @@ class Wut < Formula
 
   def caveats
     <<~EOS
-      Add shell integration to ~/.zshrc or ~/.bashrc:
+      🚀 To enable shell integration, add to your ~/.zshrc or ~/.bashrc:
+
         eval "$(wut init)"
+
+      Then restart your shell or run: source ~/.zshrc
     EOS
   end
 
