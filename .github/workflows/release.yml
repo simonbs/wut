@@ -1,0 +1,93 @@
+name: Release CLI
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New release version in major.minor.patch form'
+        required: true
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ github.event.inputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate version syntax
+        run: |
+          VERSION="${{ env.VERSION }}"
+          if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Version must be major.minor.patch"
+            exit 1
+          fi
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.25'
+      - name: Update CLI version constant
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import os, re, sys
+          version = os.environ['VERSION']
+          path = Path('cmd/wut/main.go')
+          text = path.read_text()
+          new = re.sub(r'const version = ".*"', f'const version = "{version}"', text, count=1)
+          if text == new:
+            sys.exit('failed to update version statement')
+          path.write_text(new)
+          PY
+      - name: Run unit tests
+        run: go test ./...
+      - name: Calculate release archive SHA
+        id: release-sha
+        run: |
+          VERSION=${{ env.VERSION }}
+          URL="https://github.com/simonbs/wut/archive/refs/tags/v${VERSION}.tar.gz"
+          SHA=$(curl -fsSL "$URL" | sha256sum | cut -d' ' -f1)
+          echo "archive-url=$URL" >> "$GITHUB_OUTPUT"
+          echo "archive-sha=$SHA" >> "$GITHUB_OUTPUT"
+      - name: Update Homebrew formula
+        env:
+          ARCHIVE_URL: ${{ steps.release-sha.outputs.archive-url }}
+          ARCHIVE_SHA: ${{ steps.release-sha.outputs.archive-sha }}
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import os, re
+
+          path = Path("Formula/wut.rb")
+          text = path.read_text()
+          text = re.sub(r'url ".*"', f'url "{os.environ["ARCHIVE_URL"]}"', text, count=1)
+          text = re.sub(r'sha256 ".*"', f'sha256 "{os.environ["ARCHIVE_SHA"]}"', text, count=1)
+          path.write_text(text)
+          PY
+      - name: Commit release changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add cmd/wut/main.go Formula/wut.rb
+          git commit -m "Release v${{ env.VERSION }}"
+      - name: Create v${{ env.VERSION }} tag
+        run: |
+          VERSION=${{ env.VERSION }}
+          git tag -a "v${VERSION}" -m "Release v${VERSION}"
+      - name: Push commit and tag
+        run: |
+          VERSION=${{ env.VERSION }}
+          git push origin HEAD
+          git push origin "v${VERSION}"
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+        with:
+          tag_name: "v${{ env.VERSION }}"
+          release_name: "v${{ env.VERSION }}"
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
