@@ -61,7 +61,6 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import os, re
-
           path = Path("Formula/wut.rb")
           text = path.read_text()
           text = re.sub(r'url ".*"', f'url "{os.environ["ARCHIVE_URL"]}"', text, count=1)
