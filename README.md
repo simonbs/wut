@@ -78,12 +78,16 @@ wut path <branch>             # Print worktree path
 wut rm <branch> [--force]     # Remove a worktree
 ```
 
+#### Autocompletion
+
 Autocompletion is available for supported shells once you run `eval "$(wut init)"`, so you can tab-complete commands, branch names, and worktree names.
 
 ```sh
 $ wut go feat<TAB>
 # Completes to a matching worktree name
 ```
+
+#### fzf
 
 `wut` works great paired with [fzf](https://github.com/junegunn/fzf) for fuzzy matching worktrees and `wut list` can be paired with `fzf` as shown below (Thanks [@carlosefonesca](https://masto.pt/@carlosefonseca/115980682267766544)!)
 
