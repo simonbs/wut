@@ -94,19 +94,19 @@ func printFishWrapper(binPath string) {
     set -x WUT_WRAPPER_ACTIVE 1
     set -l output ($wut_bin $argv 2>&1)
     set -l exit_code $status
-    set -l cd_marker (echo "$output" | grep "^__WUT_CD__:" | head -1)
+    set -l cd_marker (printf "%s\n" $output | grep "^__WUT_CD__:" | head -1)
     if test -n "$cd_marker"
         set -l target_dir (string replace "__WUT_CD__:" "" "$cd_marker")
         if test -d "$target_dir"
             cd "$target_dir"
         end
-        set -l filtered (printf "%s" "$output" | grep -v "^__WUT_CD__:")
+        set -l filtered (printf "%s\n" $output | grep -v "^__WUT_CD__:")
         if test -n "$filtered"
-            printf "%s\n" "$filtered"
+            printf "%s\n" $filtered
         end
     else
-        if test -n "$output"
-            printf "%s\n" "$output"
+        if test (count $output) -gt 0
+            printf "%s\n" $output
         end
     end
     return $exit_code
