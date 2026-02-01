@@ -31,9 +31,23 @@ func printUsage() {
 	fmt.Println("  wut rm <branch> [--force]     🗑  Remove a worktree")
 
 	if !context.IsWrapperActive() {
+		dotfile := ""
+		command := ""
+		switch detectShell() {
+		case "bash":
+			dotfile = "~/.bashrc"
+			command = "eval \"$(wut init)\""
+		case "fish":
+			dotfile = "~/.config/fish/config.fish"
+			command = "wut init | source"
+		case "zsh":
+			dotfile = "~/.zshrc"
+			command = "eval \"$(wut init)\""
+		}
+
 		fmt.Println()
-		fmt.Println("⚠️  Add shell integration to ~/.zshrc or ~/.bashrc:")
+		fmt.Println("⚠️  Add shell integration to " + dotfile + ":")
 		fmt.Println()
-		fmt.Println("     eval \"$(wut init)\"")
+		fmt.Println("     " + command)
 	}
 }

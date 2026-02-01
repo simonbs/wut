@@ -3,22 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/simonbs/wut/src/context"
 	"github.com/simonbs/wut/src/worktree"
 )
-
-func detectShell() string {
-	shell := os.Getenv("SHELL")
-	if strings.Contains(shell, "fish") {
-		return "fish"
-	}
-	if strings.Contains(shell, "zsh") {
-		return "zsh"
-	}
-	return "bash"
-}
 
 func cmdInit(args []string) {
 	shell := ""
