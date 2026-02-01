@@ -18,7 +18,7 @@ func main() {
 
 	switch cmd {
 	case "init":
-		cmdInit()
+		cmdInit(args)
 	case "new":
 		cmdNew(args)
 	case "list":
