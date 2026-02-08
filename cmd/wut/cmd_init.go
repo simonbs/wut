@@ -54,12 +54,12 @@ _wut_completions() {
   esac
 }
 
-complete -F _wut_completions wut
-
 # zsh completion
 if [[ -n ${ZSH_VERSION-} ]]; then
   autoload -U +X bashcompinit && bashcompinit
-fi`
+fi
+
+complete -F _wut_completions wut`
 	fmt.Println(wrapper)
 }
 
