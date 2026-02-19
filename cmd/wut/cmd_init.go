@@ -41,12 +41,12 @@ _wut_completions() {
   local prev="${COMP_WORDS[COMP_CWORD-1]}"
   
   if [[ ${COMP_CWORD} -eq 1 ]]; then
-    COMPREPLY=($(compgen -W "new list go path rm" -- "$cur"))
+    COMPREPLY=($(compgen -W "new mv list go path rm" -- "$cur"))
     return
   fi
   
   case "$prev" in
-    go|path|rm)
+    mv|go|path|rm)
       local branches
       branches=$("` + binPath + `" --completions branches 2>/dev/null)
       COMPREPLY=($(compgen -W "$branches" -- "$cur"))

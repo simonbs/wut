@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	petname "github.com/dustinkirkland/golang-petname"
 	"github.com/simonbs/wut/src/context"
 	"github.com/simonbs/wut/src/git"
 	"github.com/simonbs/wut/src/worktree"
@@ -13,17 +14,17 @@ import (
 func cmdNew(args []string) {
 	context.RequireWrapper("new")
 
-	if len(args) < 1 {
-		fail("Usage: wut new <branch> [--from <ref>]")
-	}
-
-	branch := args[0]
+	var branch string
 	fromRef := "HEAD"
 
-	for i := 1; i < len(args); i++ {
+	// Parse args: first non-flag arg is the branch name
+	positional := []string{}
+	for i := 0; i < len(args); i++ {
 		if args[i] == "--from" && i+1 < len(args) {
 			fromRef = args[i+1]
 			i++
+		} else {
+			positional = append(positional, args[i])
 		}
 	}
 
@@ -37,8 +38,25 @@ func cmdNew(args []string) {
 	}
 
 	entries, _ := worktree.ParseList(ctx.RepoRoot)
-	if existing := worktree.FindByBranch(entries, branch); existing != nil {
-		fail(fmt.Sprintf("Branch '%s' already has a worktree at %s", branch, existing.Path))
+
+	if len(positional) > 0 {
+		branch = positional[0]
+		if existing := worktree.FindByBranch(entries, branch); existing != nil {
+			fail(fmt.Sprintf("Branch '%s' already has a worktree at %s", branch, existing.Path))
+		}
+	} else {
+		// Generate a random branch name
+		const maxAttempts = 10
+		for i := 0; i < maxAttempts; i++ {
+			candidate := petname.Generate(2, "-")
+			if worktree.FindByBranch(entries, candidate) == nil && !git.RefExists(ctx.RepoRoot, "refs/heads/"+candidate) {
+				branch = candidate
+				break
+			}
+		}
+		if branch == "" {
+			fail("Could not generate a unique branch name after several attempts.")
+		}
 	}
 
 	worktreesDir := git.GetWorktreesDir(ctx.RepoRoot)

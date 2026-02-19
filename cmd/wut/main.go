@@ -27,6 +27,8 @@ func main() {
 		cmdGo(args)
 	case "path":
 		cmdPath(args)
+	case "mv":
+		cmdMv(args)
 	case "rm":
 		cmdRm(args)
 	case "--completions":

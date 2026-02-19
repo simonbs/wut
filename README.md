@@ -54,8 +54,14 @@ This enables automatic directory changing when you run `wut new` or `wut go`. Wi
 Run `wut` from inside the repo you want worktrees for.
 
 ```sh
+$ wut new
+# Creates worktree with a random name (e.g. wiggly-yellowtail) and switches to it
+
 $ wut new feature-login
-# Creates worktree and switches to it
+# Creates worktree with explicit name and switches to it
+
+$ wut mv feature-login
+# Renames current worktree's branch and moves directory
 
 $ wut list
 👉 feature-login  ~/projects/myapp/.worktrees/feature-login
@@ -71,11 +77,12 @@ $ wut rm feature-login
 `wun` will automatically create a `.worktrees/` folder in the root of the repository. `.worktrees/` folders will automatically be added to your global `.gitignore` file.
 
 ```sh
-wut new <branch> [--from ref] # Create a new worktree
-wut list                      # List worktrees
-wut go [branch]               # Navigate to a worktree
-wut path <branch>             # Print worktree path
-wut rm <branch> [--force]     # Remove a worktree
+wut new [branch] [--from ref]  # Create a new worktree (random name if omitted)
+wut mv [old] <new-name>        # Rename a worktree's branch
+wut list                       # List worktrees
+wut go [branch]                # Navigate to a worktree
+wut path <branch>              # Print worktree path
+wut rm <branch> [--force]      # Remove a worktree
 ```
 
 #### Autocompletion
