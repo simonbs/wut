@@ -40,7 +40,7 @@ func cmdNew(args []string) {
 		branch = positional[0]
 	} else {
 		// Generate a random branch name
-		branch = petname.Generate(2, "-") + "-" + time.Now().Format("2006-01-02")
+		branch = petname.Generate(2, "-") + "-" + time.Now().Format("2006-01-02-1504")
 	}
 
 	if existing := worktree.FindByBranch(entries, branch); existing != nil {
