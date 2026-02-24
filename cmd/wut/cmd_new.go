@@ -32,10 +32,6 @@ func cmdNew(args []string) {
 		fail(err.Error())
 	}
 
-	if err := context.EnsureGitignoreConfigured(ctx.RepoRoot); err != nil {
-		fail(err.Error())
-	}
-
 	entries, _ := worktree.ParseList(ctx.RepoRoot)
 	if existing := worktree.FindByBranch(entries, branch); existing != nil {
 		fail(fmt.Sprintf("Branch '%s' already has a worktree at %s", branch, existing.Path))

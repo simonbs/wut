@@ -25,10 +25,6 @@ func cmdGo(args []string) {
 		fail(err.Error())
 	}
 
-	if err := context.EnsureGitignoreConfigured(ctx.RepoRoot); err != nil {
-		fail(err.Error())
-	}
-
 	entries, _ := worktree.ParseList(ctx.RepoRoot)
 
 	var resolvedPath string
