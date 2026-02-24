@@ -1,69 +1,112 @@
 name: Release CLI
+
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'New release version in major.minor.patch form'
+        description: 'Release version in major.minor.patch form (for example: 0.2.0)'
         required: true
+      phase:
+        description: 'prepare = open version bump PR, publish = tag/release + formula PR'
+        required: true
+        default: prepare
+        type: choice
+        options:
+          - prepare
+          - publish
+
 permissions:
   contents: write
+  pull-requests: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ github.event.inputs.version }}
+      PHASE: ${{ github.event.inputs.phase }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: main
+
       - name: Validate version syntax
         run: |
-          VERSION="${{ env.VERSION }}"
-          if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Version must be major.minor.patch"
             exit 1
           fi
+
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.25'
-      - name: Update CLI version constant
+
+      - name: Prepare release PR (version bump)
+        if: env.PHASE == 'prepare'
         env:
-          VERSION: ${{ env.VERSION }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python - <<'PY'
           from pathlib import Path
-          import os, re, sys
+          import os, re
           version = os.environ['VERSION']
           path = Path('cmd/wut/main.go')
           text = path.read_text()
           new = re.sub(r'const version = ".*"', f'const version = "{version}"', text, count=1)
-          if text == new:
-            sys.exit('failed to update version statement')
           path.write_text(new)
           PY
-      - name: Run unit tests
-        run: go test ./...
-      - name: Commit CLI version bump
-        run: |
+
+          go test ./...
+
+          BRANCH="release/v${VERSION}"
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "${BRANCH}"
           git add cmd/wut/main.go
-          git commit -m "Bump CLI version to v${{ env.VERSION }}"
-      - name: Create v${{ env.VERSION }} tag
+
+          if git diff --cached --quiet; then
+            echo "No version change detected; skipping commit/PR creation."
+            exit 0
+          fi
+
+          git commit -m "Bump CLI version to v${VERSION}"
+          git push -u origin "${BRANCH}"
+
+          gh pr create \
+            --base main \
+            --head "${BRANCH}" \
+            --title "Release v${VERSION}: bump CLI version" \
+            --body "Automated release preparation for v${VERSION}.\n\n- Updates \\`cmd/wut/main.go\\` version constant\n- Runs \\`go test ./...\\`"
+
+      - name: Verify main has requested version
+        if: env.PHASE == 'publish'
         run: |
-          VERSION=${{ env.VERSION }}
+          CURRENT=$(sed -n 's/^const version = "\(.*\)"$/\1/p' cmd/wut/main.go | head -1)
+          if [[ -z "${CURRENT}" ]]; then
+            echo "Failed to read version from cmd/wut/main.go"
+            exit 1
+          fi
+          if [[ "${CURRENT}" != "${VERSION}" ]]; then
+            echo "Version mismatch: main.go has ${CURRENT}, requested publish version is ${VERSION}"
+            echo "Merge the prepare PR first, then run publish."
+            exit 1
+          fi
+
+      - name: Create and push tag
+        if: env.PHASE == 'publish'
+        run: |
           git tag -a "v${VERSION}" -m "Release v${VERSION}"
-      - name: Push commit and tag
-        run: |
-          VERSION=${{ env.VERSION }}
-          git push origin HEAD
           git push origin "v${VERSION}"
+
       - name: Calculate release archive SHA
+        if: env.PHASE == 'publish'
         id: release-sha
         run: |
-          VERSION=${{ env.VERSION }}
           URL="https://github.com/simonbs/wut/archive/refs/tags/v${VERSION}.tar.gz"
 
           for i in {1..10}; do
@@ -77,8 +120,11 @@ jobs:
 
           echo "Failed to fetch release archive after creating tag: $URL"
           exit 1
-      - name: Update Homebrew formula
+
+      - name: Update formula and open PR
+        if: env.PHASE == 'publish'
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ARCHIVE_URL: ${{ steps.release-sha.outputs.archive-url }}
           ARCHIVE_SHA: ${{ steps.release-sha.outputs.archive-sha }}
         run: |
@@ -91,17 +137,34 @@ jobs:
           text = re.sub(r'sha256 ".*"', f'sha256 "{os.environ["ARCHIVE_SHA"]}"', text, count=1)
           path.write_text(text)
           PY
-      - name: Commit formula update
-        run: |
+
+          BRANCH="release/formula-v${VERSION}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "${BRANCH}"
           git add Formula/wut.rb
-          git commit -m "Update Homebrew formula for v${{ env.VERSION }}"
-      - name: Push formula update
-        run: |
-          git push origin HEAD
+
+          if git diff --cached --quiet; then
+            echo "No formula change detected; skipping formula PR."
+            exit 0
+          fi
+
+          git commit -m "Update Homebrew formula for v${VERSION}"
+          git push -u origin "${BRANCH}"
+
+          gh pr create \
+            --base main \
+            --head "${BRANCH}" \
+            --title "Release v${VERSION}: update Homebrew formula" \
+            --body "Automated formula update for v${VERSION}.\n\n- URL: ${ARCHIVE_URL}\n- SHA256: ${ARCHIVE_SHA}"
+
       - name: Create GitHub release
+        if: env.PHASE == 'publish'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "v${{ env.VERSION }}" \
-            --title "v${{ env.VERSION }}" \
+          gh release create "v${VERSION}" \
+            --title "v${VERSION}" \
             --generate-notes
