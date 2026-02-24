@@ -38,12 +38,13 @@ func cmdNew(args []string) {
 
 	if len(positional) > 0 {
 		branch = positional[0]
-		if existing := worktree.FindByBranch(entries, branch); existing != nil {
-			fail(fmt.Sprintf("Branch '%s' already has a worktree at %s", branch, existing.Path))
-		}
 	} else {
 		// Generate a random branch name
 		branch = petname.Generate(2, "-") + "-" + time.Now().Format("2006-01-02")
+	}
+
+	if existing := worktree.FindByBranch(entries, branch); existing != nil {
+		fail(fmt.Sprintf("Branch '%s' already has a worktree at %s", branch, existing.Path))
 	}
 
 	worktreesDir := git.GetWorktreesDir(ctx.RepoRoot)
