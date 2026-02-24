@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	petname "github.com/dustinkirkland/golang-petname"
 	"github.com/simonbs/wut/src/context"
@@ -48,7 +49,7 @@ func cmdNew(args []string) {
 		// Generate a random branch name
 		const maxAttempts = 10
 		for i := 0; i < maxAttempts; i++ {
-			candidate := petname.Generate(2, "-")
+			candidate := petname.Generate(2, "-") + "-" + time.Now().Format("2006-01-02")
 			if worktree.FindByBranch(entries, candidate) == nil && !git.RefExists(ctx.RepoRoot, "refs/heads/"+candidate) {
 				branch = candidate
 				break
