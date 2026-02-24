@@ -42,11 +42,19 @@ brew tap simonbs/wut https://github.com/simonbs/wut.git
 brew install wut
 ```
 
-You'll need Git on your machine. After installation, add shell integration to your `~/.zshrc` or `~/.bashrc`:
+You'll need Git on your machine. After installation, add shell integration:
 
+**Bash/Zsh** - Add to `~/.bashrc` or `~/.zshrc`:
 ```sh
 eval "$(wut init)"
 ```
+
+**Fish** - Add to `~/.config/fish/config.fish`:
+```fish
+wut init | source
+```
+
+`wut init` uses the `$SHELL` environment variable to detect the shell. You can pass in `--zsh`, `--bash` or `--fish` to override the autodetection.
 
 This enables automatic directory changing when you run `wut new` or `wut go`. Without it, these commands will prompt you to set up shell integration.
 
