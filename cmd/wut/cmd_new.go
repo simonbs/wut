@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
+	petname "github.com/dustinkirkland/golang-petname"
 	"github.com/simonbs/wut/src/context"
 	"github.com/simonbs/wut/src/git"
 	"github.com/simonbs/wut/src/worktree"
@@ -13,17 +15,17 @@ import (
 func cmdNew(args []string) {
 	context.RequireWrapper("new")
 
-	if len(args) < 1 {
-		fail("Usage: wut new <branch> [--from <ref>]")
-	}
-
-	branch := args[0]
+	var branch string
 	fromRef := "HEAD"
 
-	for i := 1; i < len(args); i++ {
+	// Parse args: first non-flag arg is the branch name
+	positional := []string{}
+	for i := 0; i < len(args); i++ {
 		if args[i] == "--from" && i+1 < len(args) {
 			fromRef = args[i+1]
 			i++
+		} else {
+			positional = append(positional, args[i])
 		}
 	}
 
@@ -33,6 +35,14 @@ func cmdNew(args []string) {
 	}
 
 	entries, _ := worktree.ParseList(ctx.RepoRoot)
+
+	if len(positional) > 0 {
+		branch = positional[0]
+	} else {
+		// Generate a random branch name
+		branch = petname.Generate(2, "-") + "-" + time.Now().Format("2006-01-02-1504")
+	}
+
 	if existing := worktree.FindByBranch(entries, branch); existing != nil {
 		fail(fmt.Sprintf("Branch '%s' already has a worktree at %s", branch, existing.Path))
 	}
