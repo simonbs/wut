@@ -25,6 +25,7 @@ func ParseList(repoRoot string) ([]Entry, error) {
 	}
 
 	worktreesDir := git.GetWorktreesDir(repoRoot)
+	worktreesDirAbs, _ := filepath.Abs(worktreesDir)
 	var entries []Entry
 	var current Entry
 
@@ -32,7 +33,8 @@ func ParseList(repoRoot string) ([]Entry, error) {
 		switch {
 		case strings.HasPrefix(line, "worktree "):
 			current.Path = strings.TrimPrefix(line, "worktree ")
-			current.Managed = strings.HasPrefix(current.Path, worktreesDir)
+			currentPathAbs, _ := filepath.Abs(current.Path)
+			current.Managed = isPathWithin(currentPathAbs, worktreesDirAbs)
 		case strings.HasPrefix(line, "HEAD "):
 			current.Head = strings.TrimPrefix(line, "HEAD ")
 		case strings.HasPrefix(line, "branch "):
@@ -55,6 +57,13 @@ func ParseList(repoRoot string) ([]Entry, error) {
 	}
 
 	return entries, nil
+}
+
+func isPathWithin(path, parent string) bool {
+	if path == parent {
+		return true
+	}
+	return strings.HasPrefix(path, parent+string(filepath.Separator))
 }
 
 func BranchToRelativePath(branch string) string {
