@@ -68,12 +68,15 @@ $ wut rm feature-login
 # Removes worktree and deletes branch
 ```
 
-By default, `wut` stores managed worktrees outside the repo. You can override where worktrees are created by setting:
+By default, `wut` stores managed worktrees outside the repo. Configure location behavior with:
 
-- `WUT_WORKTREES_DIR` (exact directory for this repo/session)
-- `git config wut.worktreesDir <path>` (per-repo persistent setting)
-- `WUT_WORKTREES_BASE_DIR` or `git config --global wut.worktreesBaseDir <path>` (base directory for all repos)
-- `WUT_WORKTREES_INCLUDE_REPO_HASH=true` or `git config wut.includeRepoHash true` (append `<hash>` as `<repo>-<hash>` to reduce collisions for repos with the same name, like `api`)
+| Environment Variable | Git Config | Purpose | Default |
+|---|---|---|---|
+| `WUT_WORKTREES_DIR` | `wut.worktreesDir` | Exact worktrees directory for this repo/session. | Unset |
+| `WUT_WORKTREES_BASE_DIR` | `wut.worktreesBaseDir` (global) | Base directory where repo folders are created. | `~/.wut/repos` |
+| `WUT_WORKTREES_INCLUDE_REPO_HASH` | `wut.includeRepoHash` | Append a stable hash as `<repo>-<hash>` to reduce name collisions. | `false` |
+
+Set `WUT_WORKTREES_INCLUDE_REPO_HASH=true` (or `git config wut.includeRepoHash true`) when you work with multiple repos that share a name (for example `api`).
 
 If a repo already has a legacy `.worktrees/` directory, `wut` will keep using it for backwards compatibility.
 
