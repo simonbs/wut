@@ -47,17 +47,7 @@ func cmdNew(args []string) {
 		}
 	} else {
 		// Generate a random branch name
-		const maxAttempts = 10
-		for i := 0; i < maxAttempts; i++ {
-			candidate := petname.Generate(2, "-") + "-" + time.Now().Format("2006-01-02")
-			if worktree.FindByBranch(entries, candidate) == nil && !git.RefExists(ctx.RepoRoot, "refs/heads/"+candidate) {
-				branch = candidate
-				break
-			}
-		}
-		if branch == "" {
-			fail("Could not generate a unique branch name after several attempts.")
-		}
+		branch = petname.Generate(2, "-") + "-" + time.Now().Format("2006-01-02")
 	}
 
 	worktreesDir := git.GetWorktreesDir(ctx.RepoRoot)
