@@ -45,14 +45,38 @@ jobs:
           PY
       - name: Run unit tests
         run: go test ./...
+      - name: Commit CLI version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add cmd/wut/main.go
+          git commit -m "Bump CLI version to v${{ env.VERSION }}"
+      - name: Create v${{ env.VERSION }} tag
+        run: |
+          VERSION=${{ env.VERSION }}
+          git tag -a "v${VERSION}" -m "Release v${VERSION}"
+      - name: Push commit and tag
+        run: |
+          VERSION=${{ env.VERSION }}
+          git push origin HEAD
+          git push origin "v${VERSION}"
       - name: Calculate release archive SHA
         id: release-sha
         run: |
           VERSION=${{ env.VERSION }}
           URL="https://github.com/simonbs/wut/archive/refs/tags/v${VERSION}.tar.gz"
-          SHA=$(curl -fsSL "$URL" | sha256sum | cut -d' ' -f1)
-          echo "archive-url=$URL" >> "$GITHUB_OUTPUT"
-          echo "archive-sha=$SHA" >> "$GITHUB_OUTPUT"
+
+          for i in {1..10}; do
+            if SHA=$(curl -fsSL "$URL" | sha256sum | cut -d' ' -f1); then
+              echo "archive-url=$URL" >> "$GITHUB_OUTPUT"
+              echo "archive-sha=$SHA" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            sleep 3
+          done
+
+          echo "Failed to fetch release archive after creating tag: $URL"
+          exit 1
       - name: Update Homebrew formula
         env:
           ARCHIVE_URL: ${{ steps.release-sha.outputs.archive-url }}
@@ -67,21 +91,13 @@ jobs:
           text = re.sub(r'sha256 ".*"', f'sha256 "{os.environ["ARCHIVE_SHA"]}"', text, count=1)
           path.write_text(text)
           PY
-      - name: Commit release changes
+      - name: Commit formula update
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add cmd/wut/main.go Formula/wut.rb
-          git commit -m "Release v${{ env.VERSION }}"
-      - name: Create v${{ env.VERSION }} tag
+          git add Formula/wut.rb
+          git commit -m "Update Homebrew formula for v${{ env.VERSION }}"
+      - name: Push formula update
         run: |
-          VERSION=${{ env.VERSION }}
-          git tag -a "v${VERSION}" -m "Release v${VERSION}"
-      - name: Push commit and tag
-        run: |
-          VERSION=${{ env.VERSION }}
           git push origin HEAD
-          git push origin "v${VERSION}"
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
