@@ -27,12 +27,10 @@ func cmdMv(args []string) {
 	if err != nil {
 		fail(err.Error())
 	}
-
 	var entry *worktree.Entry
 	var newName string
 
 	if len(args) == 1 {
-		// wut mv <new-name>: rename the current worktree's branch
 		newName = args[0]
 		cwd, err := os.Getwd()
 		if err != nil {
@@ -43,7 +41,6 @@ func cmdMv(args []string) {
 			fail("Not inside a managed worktree. Use: wut mv <old-name> <new-name>")
 		}
 	} else {
-		// wut mv <old-name> <new-name>
 		oldName := args[0]
 		newName = args[1]
 		entry = worktree.FindByBranch(entries, oldName)
@@ -52,7 +49,9 @@ func cmdMv(args []string) {
 		}
 	}
 
-	if !entry.Managed {
+	entryAbs, _ := filepath.Abs(entry.Path)
+	repoRootAbs, _ := filepath.Abs(ctx.RepoRoot)
+	if entryAbs == repoRootAbs {
 		fail("Cannot rename the main worktree.")
 	}
 
@@ -65,45 +64,64 @@ func cmdMv(args []string) {
 		fail("New name is the same as the current name.")
 	}
 
-	// Check that the target branch name doesn't already exist
+	preMoveCwd, _ := os.Getwd()
+	oldAbs, _ := filepath.Abs(entry.Path)
+	wasInsideRenamedWorktree := isPathInside(preMoveCwd, oldAbs)
+
 	if git.RefExists(ctx.RepoRoot, "refs/heads/"+newName) {
 		fail(fmt.Sprintf("Branch '%s' already exists.", newName))
 	}
 
-	// Rename the branch
 	if _, err := git.Run([]string{"branch", "-m", oldName, newName}, ctx.RepoRoot); err != nil {
 		fail(fmt.Sprintf("Failed to rename branch: %s", err.Error()))
 	}
 
-	// Move the worktree directory to match the new branch name
 	worktreesDir := git.GetWorktreesDir(ctx.RepoRoot)
 	newRelativePath := worktree.BranchToRelativePath(newName)
 	newPath := filepath.Join(worktreesDir, newRelativePath)
 	newPath = worktree.UniquePath(newPath)
 
 	if _, err := git.Run([]string{"worktree", "move", entry.Path, newPath}, ctx.RepoRoot); err != nil {
-		// Rollback the branch rename
 		git.Run([]string{"branch", "-m", newName, oldName}, ctx.RepoRoot)
 		fail(fmt.Sprintf("Failed to move worktree: %s", err.Error()))
 	}
 
-	// If the user is inside the renamed worktree, update their shell cwd
-	cwd, _ := os.Getwd()
-	oldAbs, _ := filepath.Abs(entry.Path)
-	if strings.HasPrefix(cwd, oldAbs) {
-		// Preserve any subdirectory the user was in
-		rel, _ := filepath.Rel(oldAbs, cwd)
+	if wasInsideRenamedWorktree {
+		rel, _ := filepath.Rel(oldAbs, preMoveCwd)
 		fmt.Printf("__WUT_CD__:%s\n", filepath.Join(newPath, rel))
 	}
 }
 
-// findWorktreeForCwd finds the worktree entry that contains the given cwd.
 func findWorktreeForCwd(entries []worktree.Entry, cwd string) *worktree.Entry {
+	cwdAbs, _ := filepath.Abs(cwd)
+	var best *worktree.Entry
+	bestLen := -1
+
 	for i := range entries {
 		abs, _ := filepath.Abs(entries[i].Path)
-		if cwd == abs || strings.HasPrefix(cwd, abs+string(filepath.Separator)) {
-			return &entries[i]
+		if isPathInside(cwdAbs, abs) {
+			if len(abs) > bestLen {
+				best = &entries[i]
+				bestLen = len(abs)
+			}
 		}
 	}
-	return nil
+	return best
+}
+
+func isPathInside(path, parent string) bool {
+	pathAbs, _ := filepath.Abs(path)
+	parentAbs, _ := filepath.Abs(parent)
+
+	if pathAbs == parentAbs || strings.HasPrefix(pathAbs, parentAbs+string(filepath.Separator)) {
+		return true
+	}
+
+	pathEval, errPath := filepath.EvalSymlinks(pathAbs)
+	parentEval, errParent := filepath.EvalSymlinks(parentAbs)
+	if errPath == nil && errParent == nil {
+		return pathEval == parentEval || strings.HasPrefix(pathEval, parentEval+string(filepath.Separator))
+	}
+
+	return false
 }

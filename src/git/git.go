@@ -51,24 +51,17 @@ func GetRepoRoot(cwd string) (string, error) {
 		}
 	}
 
-	// Check if .git is a file (worktree)
-	gitPath := filepath.Join(cwd, ".git")
-	info, err := os.Stat(gitPath)
-	if err == nil && !info.IsDir() {
-		content, err := os.ReadFile(gitPath)
-		if err == nil {
-			line := strings.TrimSpace(string(content))
-			if strings.HasPrefix(line, "gitdir: ") {
-				gitdir := strings.TrimPrefix(line, "gitdir: ")
-				// Extract main repo path from worktree gitdir
-				if idx := strings.Index(gitdir, "/.git/worktrees"); idx != -1 {
-					return gitdir[:idx], nil
-				}
-			}
+	// Ask Git for the common .git directory so this also works when called
+	// from nested paths inside linked worktrees.
+	commonDir, err := Run([]string{"rev-parse", "--path-format=absolute", "--git-common-dir"}, cwd)
+	if err == nil {
+		commonDir = strings.TrimSpace(commonDir)
+		if commonDir != "" && filepath.Base(commonDir) == ".git" {
+			return filepath.Dir(commonDir), nil
 		}
 	}
 
-	// Normal repo - use rev-parse
+	// Fallback for older Git versions or unusual environments.
 	output, err := Run([]string{"rev-parse", "--show-toplevel"}, cwd)
 	if err != nil {
 		return "", fmt.Errorf("Not inside a Git repository.")
