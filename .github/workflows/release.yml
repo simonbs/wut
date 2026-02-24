@@ -1,12 +1,15 @@
 name: Release CLI
+
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'New release version in major.minor.patch form'
+        description: "New release version in major.minor.patch form"
         required: true
+
 permissions:
   contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -17,42 +20,67 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: main
+
       - name: Validate version syntax
         run: |
-          VERSION="${{ env.VERSION }}"
-          if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Version must be major.minor.patch"
             exit 1
           fi
+
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.25'
+          go-version: "1.25"
+
       - name: Update CLI version constant
-        env:
-          VERSION: ${{ env.VERSION }}
         run: |
           python - <<'PY'
           from pathlib import Path
           import os, re, sys
-          version = os.environ['VERSION']
-          path = Path('cmd/wut/main.go')
+          version = os.environ["VERSION"]
+          path = Path("cmd/wut/main.go")
           text = path.read_text()
           new = re.sub(r'const version = ".*"', f'const version = "{version}"', text, count=1)
           if text == new:
-            sys.exit('failed to update version statement')
+            sys.exit("failed to update version statement")
           path.write_text(new)
           PY
+
       - name: Run unit tests
         run: go test ./...
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add cmd/wut/main.go
+          git commit -m "Bump CLI version to v${VERSION}"
+
+      - name: Create and push tag
+        run: |
+          git tag -a "v${VERSION}" -m "Release v${VERSION}"
+          git push origin HEAD
+          git push origin "v${VERSION}"
+
       - name: Calculate release archive SHA
         id: release-sha
         run: |
-          VERSION=${{ env.VERSION }}
           URL="https://github.com/simonbs/wut/archive/refs/tags/v${VERSION}.tar.gz"
-          SHA=$(curl -fsSL "$URL" | sha256sum | cut -d' ' -f1)
-          echo "archive-url=$URL" >> "$GITHUB_OUTPUT"
-          echo "archive-sha=$SHA" >> "$GITHUB_OUTPUT"
+
+          for i in {1..10}; do
+            if SHA=$(curl -fsSL "$URL" | sha256sum | cut -d' ' -f1); then
+              echo "archive-url=$URL" >> "$GITHUB_OUTPUT"
+              echo "archive-sha=$SHA" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            sleep 3
+          done
+
+          echo "Failed to fetch release archive after creating tag: $URL"
+          exit 1
+
       - name: Update Homebrew formula
         env:
           ARCHIVE_URL: ${{ steps.release-sha.outputs.archive-url }}
@@ -67,25 +95,17 @@ jobs:
           text = re.sub(r'sha256 ".*"', f'sha256 "{os.environ["ARCHIVE_SHA"]}"', text, count=1)
           path.write_text(text)
           PY
-      - name: Commit release changes
+
+      - name: Commit and push formula update
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add cmd/wut/main.go Formula/wut.rb
-          git commit -m "Release v${{ env.VERSION }}"
-      - name: Create v${{ env.VERSION }} tag
-        run: |
-          VERSION=${{ env.VERSION }}
-          git tag -a "v${VERSION}" -m "Release v${VERSION}"
-      - name: Push commit and tag
-        run: |
-          VERSION=${{ env.VERSION }}
+          git add Formula/wut.rb
+          git commit -m "Update Homebrew formula for v${VERSION}"
           git push origin HEAD
-          git push origin "v${VERSION}"
+
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "v${{ env.VERSION }}" \
-            --title "v${{ env.VERSION }}" \
+          gh release create "v${VERSION}" \
+            --title "v${VERSION}" \
             --generate-notes

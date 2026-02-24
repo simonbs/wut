@@ -24,10 +24,6 @@ func cmdRm(args []string) {
 		}
 	}
 
-	if err := context.EnsureGitignoreConfigured(); err != nil {
-		fail(err.Error())
-	}
-
 	ctx, err := context.Create()
 	if err != nil {
 		fail(err.Error())

@@ -20,10 +20,6 @@ func cmdGo(args []string) {
 
 	context.RequireWrapper("go")
 
-	if err := context.EnsureGitignoreConfigured(); err != nil {
-		fail(err.Error())
-	}
-
 	ctx, err := context.Create()
 	if err != nil {
 		fail(err.Error())

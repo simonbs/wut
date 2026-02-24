@@ -29,7 +29,7 @@
 ## ✨ Why?
 Git’s native worktree commands feel tedious and geared toward long-lived worktrees, but I just spin them up for short-lived sessions. **wut?** streamlines that.
 
-**wut?** keeps worktrees in the `.worktrees` folder (auto-ignored by Git) inside the repo and exposes commands like `wut new`, `wut go`, `wut list`, and `wut rm` to manage them.
+**wut?** keeps worktrees in `~/.wut/repos/` and exposes commands like `wut new`, `wut go`, `wut list`, and `wut rm` to manage them.
 
 It still builds directly on Git’s worktrees, so it plays nicely with any other Git CLI or UI. Very opinionated and very much designed for the ✨agentic era✨, unlike the built-in commands that are super tedious.
 
@@ -64,7 +64,7 @@ $ wut mv feature-login
 # Renames current worktree's branch and moves directory
 
 $ wut list
-👉 feature-login  ~/projects/myapp/.worktrees/feature-login
+👉 feature-login  ~/.wut/repos/myapp/feature-login
 🏠 main           ~/projects/myapp
 
 $ wut go
@@ -74,7 +74,17 @@ $ wut rm feature-login
 # Removes worktree and deletes branch
 ```
 
-`wun` will automatically create a `.worktrees/` folder in the root of the repository. `.worktrees/` folders will automatically be added to your global `.gitignore` file.
+By default, `wut` stores managed worktrees outside the repo. Configure location behavior with:
+
+| Environment Variable | Git Config | Purpose | Default |
+|---|---|---|---|
+| `WUT_WORKTREES_DIR` | `wut.worktreesDir` | Exact worktrees directory for this repo/session. | Unset |
+| `WUT_WORKTREES_BASE_DIR` | `wut.worktreesBaseDir` (global) | Base directory where repo folders are created. | `~/.wut/repos` |
+| `WUT_WORKTREES_INCLUDE_REPO_HASH` | `wut.includeRepoHash` | Append a stable hash as `<repo>-<hash>` to reduce name collisions. | `false` |
+
+Set `WUT_WORKTREES_INCLUDE_REPO_HASH=true` (or `git config wut.includeRepoHash true`) when you work with multiple repos that share a name (for example `api`).
+
+If a repo already has a legacy `.worktrees/` directory, `wut` will keep using it for backwards compatibility.
 
 ```sh
 wut new [branch] [--from ref]  # Create a new worktree (random name if omitted)
