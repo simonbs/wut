@@ -70,9 +70,10 @@ func AddToGlobalGitignore() error {
 	return nil
 }
 
-func checkLocalGitignore() bool {
+func checkLocalGitignore(repoRoot string) bool {
 	// Check if .worktrees is in the repo's .gitignore
-	data, err := os.ReadFile(".gitignore")
+	gitignorePath := filepath.Join(repoRoot, ".gitignore")
+	data, err := os.ReadFile(gitignorePath)
 	if err != nil {
 		return false
 	}
@@ -85,14 +86,25 @@ func checkLocalGitignore() bool {
 	return false
 }
 
-func EnsureGitignoreConfigured() error {
+func EnsureGitignoreConfigured(repoRoot string) error {
+	worktreesDir := git.GetWorktreesDir(repoRoot)
+	legacyDir := git.LegacyWorktreesDir(repoRoot)
+
+	worktreesAbs, _ := filepath.Abs(worktreesDir)
+	legacyAbs, _ := filepath.Abs(legacyDir)
+
+	// Only legacy in-repo worktrees require .worktrees ignore configuration.
+	if worktreesAbs != legacyAbs {
+		return nil
+	}
+
 	// Already in global gitignore
 	if CheckGlobalGitignore() {
 		return nil
 	}
 
 	// Already in local .gitignore, no need to add globally
-	if checkLocalGitignore() {
+	if checkLocalGitignore(repoRoot) {
 		return nil
 	}
 

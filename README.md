@@ -29,7 +29,7 @@
 ## ✨ Why?
 Git’s native worktree commands feel tedious and geared toward long-lived worktrees, but I just spin them up for short-lived sessions. **wut?** streamlines that.
 
-**wut?** keeps worktrees in the `.worktrees` folder (auto-ignored by Git) inside the repo and exposes commands like `wut new`, `wut go`, `wut list`, and `wut rm` to manage them.
+**wut?** keeps worktrees in `~/.wut/repos/` and exposes commands like `wut new`, `wut go`, `wut list`, and `wut rm` to manage them.
 
 It still builds directly on Git’s worktrees, so it plays nicely with any other Git CLI or UI. Very opinionated and very much designed for the ✨agentic era✨, unlike the built-in commands that are super tedious.
 
@@ -58,7 +58,7 @@ $ wut new feature-login
 # Creates worktree and switches to it
 
 $ wut list
-👉 feature-login  ~/projects/myapp/.worktrees/feature-login
+👉 feature-login  ~/.wut/repos/myapp/feature-login
 🏠 main           ~/projects/myapp
 
 $ wut go
@@ -68,7 +68,14 @@ $ wut rm feature-login
 # Removes worktree and deletes branch
 ```
 
-`wun` will automatically create a `.worktrees/` folder in the root of the repository. `.worktrees/` folders will automatically be added to your global `.gitignore` file.
+By default, `wut` stores managed worktrees outside the repo. You can override where worktrees are created by setting:
+
+- `WUT_WORKTREES_DIR` (exact directory for this repo/session)
+- `git config wut.worktreesDir <path>` (per-repo persistent setting)
+- `WUT_WORKTREES_BASE_DIR` or `git config --global wut.worktreesBaseDir <path>` (base directory for all repos)
+- `WUT_WORKTREES_INCLUDE_REPO_HASH=true` or `git config wut.includeRepoHash true` (append `<hash>` as `<repo>-<hash>` to reduce collisions for repos with the same name, like `api`)
+
+If a repo already has a legacy `.worktrees/` directory, `wut` will keep using it for backwards compatibility.
 
 ```sh
 wut new <branch> [--from ref] # Create a new worktree

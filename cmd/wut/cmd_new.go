@@ -27,12 +27,12 @@ func cmdNew(args []string) {
 		}
 	}
 
-	if err := context.EnsureGitignoreConfigured(); err != nil {
+	ctx, err := context.Create()
+	if err != nil {
 		fail(err.Error())
 	}
 
-	ctx, err := context.Create()
-	if err != nil {
+	if err := context.EnsureGitignoreConfigured(ctx.RepoRoot); err != nil {
 		fail(err.Error())
 	}
 
