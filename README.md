@@ -55,7 +55,7 @@ Run `wut` from inside the repo you want worktrees for.
 
 ```sh
 $ wut new
-# Creates worktree with a random name (e.g. wiggly-yellowtail) and switches to it
+# Creates worktree with a random name (e.g. wiggly-yellowtail-2026-02-24) and switches to it
 
 $ wut new feature-login
 # Creates worktree with explicit name and switches to it
