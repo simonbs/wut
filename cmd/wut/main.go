@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-const version = "0.2.1"
+const version = "0.3.0"
 
 func main() {
 	if len(os.Args) < 2 {
@@ -27,6 +27,8 @@ func main() {
 		cmdGo(args)
 	case "path":
 		cmdPath(args)
+	case "mv":
+		cmdMv(args)
 	case "rm":
 		cmdRm(args)
 	case "--completions":
